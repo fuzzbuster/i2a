@@ -39,11 +39,28 @@ bash <(wget -qO - 'https://raw.githubusercontent.com/tanbi-org/i2a/master/i2a.sh
 --reflector            # Auto-select fastest mirror
 ```
 
+## Similar Projects
+
+> Reference: [Arch Wiki - Install Arch Linux from existing Linux](https://wiki.archlinux.org/title/Install_Arch_Linux_from_existing_Linux)
+
+There are multiple tools which automate the installation of Arch Linux from another Linux distribution:
+
+- **[archstrap](https://github.com/hartwork/image-bootstrap)** (Bash) - Arch Linux bootstrap script
+- **[vps2arch](https://gitlab.com/drizzt/vps2arch)** (Bash) - Convert VPS to Arch Linux (does not perform PGP signature verification)
+- **[digitalocean-debian-to-arch](https://github.com/gh2o/digitalocean-debian-to-arch)** (Bash) - DigitalOcean specific with disk repartitioning (does not perform PGP signature verification)
+- **[image-bootstrap](https://github.com/hartwork/image-bootstrap)** (Python) - Image bootstrap tool (does not perform PGP signature verification)
+
+**i2a advantages**:
+- ✅ Performs PGP signature verification (via pacman-key)
+- ✅ Compatible with systemd v255+
+- ✅ Full LUKS encryption support with LVM
+- ✅ China mirror optimization (50-100x faster)
+- ✅ Remote installation monitoring (SSH port 2222)
+
 ## Documentation
 
 - [CLAUDE.md](CLAUDE.md) - Technical architecture and implementation details
 - [Refactoring Guide](docs/REFACTORING.md) - Alpine→Direct installation refactoring details
-- [中国用户指南](docs/CN_GUIDE.md) - China users guide
 - [Changelog](docs/CHANGELOG.md) - Version history
 
 ## Warning
