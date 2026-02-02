@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch(domain:wiki.archlinux.org)",
+      "WebFetch(domain:docs.j7k6.net)",
+      "Bash(curl:*)",
+      "Bash(for mirror in \"https://mirrors.ustc.edu.cn/lxc-images\" \"https://mirrors.bfsu.edu.cn/lxc-images\" \"https://mirror.sjtu.edu.cn/lxc-images\" \"https://mirrors.tuna.tsinghua.edu.cn/lxc-images\")",
+      "Bash(do)",
+      "Bash(echo:*)",
+      "Bash(done)",
+      "Bash(bash -n:*)",
+      "Bash(ls:*)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:wiki.alpinelinux.org)",
+      "WebFetch(domain:gitlab.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(chmod:*)"
+    ]
+  }
+}
