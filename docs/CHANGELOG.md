@@ -7,12 +7,14 @@
 **Major refactoring:** Replaced three-stage Alpine-based installation with two-stage direct installation.
 
 #### Problem Solved
+
 - Fixed: `systemctl switch-root` fails on systemd v255+ with "Not in initrd, refusing switch-root operation"
 - Root cause: systemd v255+ restricts `switch-root` to initrd environments only
 
 #### Architecture Changes
 
 **Before (v1.x):**
+
 ```
 Debian → Alpine (via switch-root) → Arch (via reboot)
 - 3 execution stages
@@ -21,6 +23,7 @@ Debian → Alpine (via switch-root) → Arch (via reboot)
 ```
 
 **After (v2.0):**
+
 ```
 Debian → Arch (via chroot + deletion + reboot)
 - 2 execution stages
@@ -31,6 +34,7 @@ Debian → Arch (via chroot + deletion + reboot)
 ### Added
 
 #### New Functions (13)
+
 - `install_debian_dependencies()` - Install required Debian tools
 - `partition_and_format_disk()` - Direct disk operations with LUKS support
 - `download_arch_bootstrap()` - Download Arch bootstrap tarball
@@ -46,6 +50,7 @@ Debian → Arch (via chroot + deletion + reboot)
 - `final_reboot()` - Sync and force reboot
 
 #### Verification System
+
 - 9 verification checkpoints before Debian deletion:
   1. Dependency verification (all tools installed)
   2. Partition verification (block devices exist)
@@ -58,11 +63,13 @@ Debian → Arch (via chroot + deletion + reboot)
   9. Full installation verification (all critical files present)
 
 #### Monitoring Feature
+
 - Dropbear SSH server on port 2222 during deletion phase
 - Allows remote monitoring of final installation stages
 - Particularly useful for remote/headless installations
 
 #### Tools Integration
+
 - Use official Arch installation tools from Debian repos:
   - `arch-chroot` (proper chroot with mount handling)
   - `genfstab` (automatic fstab generation)
@@ -71,27 +78,31 @@ Debian → Arch (via chroot + deletion + reboot)
 ### Removed
 
 #### Deprecated Functions (4)
+
 - `download_and_extract_rootfs()` - No longer need Alpine rootfs
 - `configure_rootfs_dependencies()` - No longer need Alpine configuration
 - `cleanup()` - No tmpfs to clean up
 - `switch_to_rootfs()` - No longer using switch-root
 
 #### Removed Dependencies
+
 - Alpine Linux rootfs (3-20MB download eliminated)
 - tmpfs mount for intermediate system (200-400MB RAM saved)
 
 ### Changed
 
 #### Performance Improvements
-| Metric | Before | After | Improvement |
-|--------|--------|-------|-------------|
-| Execution stages | 3 | 2 | -33% |
-| Memory overhead | 200-400MB | 0MB | -100% |
-| Download size | 350-550MB | 150MB | -57% to -73% |
-| Installation time | 8-12min | 5-10min | -25% to -37% |
-| Code lines | 595 | 581 | -14 lines |
+
+| Metric            | Before    | After   | Improvement  |
+| ----------------- | --------- | ------- | ------------ |
+| Execution stages  | 3         | 2       | -33%         |
+| Memory overhead   | 200-400MB | 0MB     | -100%        |
+| Download size     | 350-550MB | 150MB   | -57% to -73% |
+| Installation time | 8-12min   | 5-10min | -25% to -37% |
+| Code lines        | 595       | 581     | -14 lines    |
 
 #### Code Quality
+
 - Eliminated 280+ lines of embedded script generation
 - Simplified variable interpolation
 - Clearer execution flow
@@ -99,7 +110,9 @@ Debian → Arch (via chroot + deletion + reboot)
 - Independent function testing
 
 #### Execution Flow
+
 **Before:**
+
 ```bash
 download_and_extract_rootfs
 configure_rootfs_dependencies
@@ -107,6 +120,7 @@ switch_to_rootfs  # 300-line embedded script
 ```
 
 **After:**
+
 ```bash
 install_debian_dependencies
 partition_and_format_disk
@@ -156,11 +170,13 @@ final_reboot
 ### Migration Notes
 
 **No action required for users:**
+
 - Same command-line interface
 - Same installation result
 - Automatic compatibility with newer systemd
 
 **For developers:**
+
 - See `docs/REFACTORING.md` for detailed comparison
 - Original code backed up in `i2a.sh.backup`
 - Function-by-function breakdown available

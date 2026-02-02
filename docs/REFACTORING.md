@@ -7,6 +7,7 @@ i2a has been refactored from a three-stage Alpine-based installation to a two-st
 ## Problem Solved
 
 **Original Issue:**
+
 ```
 Failed to switch root: Not in initrd, refusing switch-root operation.
 ```
@@ -33,6 +34,7 @@ Arch Linux System ✓
 ```
 
 **Key characteristics:**
+
 - 3 execution stages
 - 200-400MB tmpfs overhead
 - Complex embedded script generation (280+ lines)
@@ -56,6 +58,7 @@ Arch Linux System ✓
 ```
 
 **Key characteristics:**
+
 - 2 execution stages
 - 0MB memory overhead
 - Direct function calls
@@ -64,14 +67,14 @@ Arch Linux System ✓
 
 ## Performance Comparison
 
-| Metric | Before (Alpine) | After (Direct) | Improvement |
-|--------|----------------|----------------|-------------|
-| Execution stages | 3 | 2 | -33% |
-| Memory overhead | 200-400MB tmpfs | 0MB | -100% |
-| Download size | 350-550MB | 150MB | -57% to -73% |
-| Installation time | 8-12 minutes | 5-10 minutes | -25% to -37% |
-| Code lines | 595 | 581 | -2.4% |
-| systemd v255+ compatible | ❌ No | ✅ Yes | **Fixed** |
+| Metric                   | Before (Alpine) | After (Direct) | Improvement  |
+| ------------------------ | --------------- | -------------- | ------------ |
+| Execution stages         | 3               | 2              | -33%         |
+| Memory overhead          | 200-400MB tmpfs | 0MB            | -100%        |
+| Download size            | 350-550MB       | 150MB          | -57% to -73% |
+| Installation time        | 8-12 minutes    | 5-10 minutes   | -25% to -37% |
+| Code lines               | 595             | 581            | -2.4%        |
+| systemd v255+ compatible | ❌ No           | ✅ Yes         | **Fixed**    |
 
 ## Code Changes
 
@@ -105,6 +108,7 @@ Arch Linux System ✓
 ### Main Execution Flow Comparison
 
 **Before (i2a.sh.backup, lines 588-595):**
+
 ```bash
 if parse_command_and_confirm "$@" ; then
   download_and_extract_rootfs
@@ -117,6 +121,7 @@ fi
 ```
 
 **After:**
+
 ```bash
 if parse_command_and_confirm "$@" ; then
   # Stage 1: Prepare Debian environment
@@ -146,22 +151,26 @@ fi
 ## Key Improvements
 
 ### 1. systemd Compatibility
+
 - ✅ Works with all systemd versions (no switch-root dependency)
 - ✅ No reliance on cached initrd detection
 - ✅ Future-proof against systemd changes
 
 ### 2. Code Simplicity
+
 - No embedded script generation with complex variable interpolation
 - Direct function calls with clear execution flow
 - Each function is independently testable and debuggable
 - Better error messages and logging
 
 ### 3. Tool Usage
+
 - Uses official Arch installation tools (`arch-chroot`, `genfstab`)
 - Eliminates Alpine Linux dependency
 - Reduces complexity and maintenance burden
 
 ### 4. Verification and Safety
+
 Added 9 verification checkpoints before Debian deletion:
 
 1. Dependency verification - All required tools installed
@@ -177,6 +186,7 @@ Added 9 verification checkpoints before Debian deletion:
 **Safety guarantee**: If any verification fails, the script exits before deletion, leaving the Debian system intact and bootable.
 
 ### 5. Monitoring Capability
+
 - Dropbear SSH server starts on port 2222 after Arch installation completes
 - Allows remote monitoring during Debian deletion phase
 - Particularly useful for remote/headless installations
@@ -187,6 +197,7 @@ Added 9 verification checkpoints before Debian deletion:
 ✅ **100% backward compatible** - All user-facing features preserved:
 
 **Command-line options:**
+
 - `--pwd PASSWORD` - Custom root password
 - `--encryption` / `--luks` - Enable full disk encryption
 - `--luks-password PASSWORD` - LUKS encryption password
@@ -198,6 +209,7 @@ Added 9 verification checkpoints before Debian deletion:
 - `--mirror URL` - Custom Arch mirror
 
 **Functionality:**
+
 - LUKS2 encryption with LVM
 - Automatic swap sizing (RAM size, max 8GB)
 - China mirror support (50-100x faster)
@@ -209,7 +221,9 @@ Added 9 verification checkpoints before Debian deletion:
 ## Technical Details
 
 ### Debian Tools Used
+
 The refactored version installs these packages from Debian repositories:
+
 - `arch-install-scripts` - Provides `arch-chroot` and `genfstab`
 - `gdisk` - GPT partitioning tool (`sgdisk`)
 - `cryptsetup` - LUKS encryption management
@@ -219,7 +233,9 @@ The refactored version installs these packages from Debian repositories:
 - `dropbear-bin` - Lightweight SSH server for monitoring
 
 ### Critical Verification Files
+
 Before deleting Debian, the script verifies these files exist:
+
 - `/mnt/boot/grub/grub.cfg` - GRUB configuration with kernel entries
 - `/mnt/etc/fstab` - Filesystem mount table with EFI entry
 - `/mnt/usr/bin/pacman` - Arch package manager
@@ -227,6 +243,7 @@ Before deleting Debian, the script verifies these files exist:
 - `/mnt/etc/systemd/network/default.network` - Network configuration
 
 ### Error Handling
+
 - Functions use `set -Eeuo pipefail` for strict error handling
 - Each function returns immediately on error via `fatal()`
 - Critical binaries (`sync`, `sleep`, `reboot`) backed up to `/tmp`
@@ -239,24 +256,19 @@ Before deleting Debian, the script verifies these files exist:
 ### Priority Test Scenarios
 
 **P0 (Must test):**
+
 1. Basic unencrypted installation (Debian 12, UEFI, DHCP)
 2. Encrypted installation (Debian 12, UEFI, LUKS+LVM, DHCP)
 3. BIOS boot mode (Debian 12, BIOS, unencrypted)
 
-**P1 (Should test):**
-4. China mirror (Debian 12, UEFI, `--cn-mirror`)
-5. Static network (Debian 12, UEFI, static IPv4/IPv6)
-6. LTS kernel (Debian 12, UEFI, `--lts`)
-7. Full-featured (Debian 12, UEFI, LUKS+LVM, static IPv6, CN mirror, reflector)
+**P1 (Should test):** 4. China mirror (Debian 12, UEFI, `--cn-mirror`) 5. Static network (Debian 12, UEFI, static IPv4/IPv6) 6. LTS kernel (Debian 12, UEFI, `--lts`) 7. Full-featured (Debian 12, UEFI, LUKS+LVM, static IPv6, CN mirror, reflector)
 
-**P2 (Nice to test):**
-8. Debian 11 compatibility (bullseye)
-9. Low memory environment (1GB RAM)
-10. Slow network conditions
+**P2 (Nice to test):** 8. Debian 11 compatibility (bullseye) 9. Low memory environment (1GB RAM) 10. Slow network conditions
 
 ### Verification Checklist
 
 After installation, verify:
+
 - [ ] System boots successfully
 - [ ] Can login with configured password
 - [ ] Network connectivity works (IPv4 and IPv6 if configured)
@@ -271,6 +283,7 @@ After installation, verify:
 Original script backed up to: `i2a.sh.backup`
 
 To rollback:
+
 ```bash
 cd /Users/ninja/Downloads/i2a
 cp i2a.sh.backup i2a.sh
@@ -285,15 +298,15 @@ cp i2a.sh.backup i2a.sh
 
 ## Advantages Summary
 
-| Aspect | Advantage |
-|--------|-----------|
-| **Compatibility** | Works with all systemd versions, including v255+ |
-| **Simplicity** | Direct execution, no embedded script generation |
-| **Performance** | 25-73% reduction in download size, memory, and time |
-| **Maintainability** | Clear function structure, easier to debug and extend |
-| **Safety** | 9 verification checkpoints before destructive operations |
-| **Monitoring** | Remote visibility during deletion phase (port 2222) |
-| **Standards** | Uses official Arch installation tools |
+| Aspect              | Advantage                                                |
+| ------------------- | -------------------------------------------------------- |
+| **Compatibility**   | Works with all systemd versions, including v255+         |
+| **Simplicity**      | Direct execution, no embedded script generation          |
+| **Performance**     | 25-73% reduction in download size, memory, and time      |
+| **Maintainability** | Clear function structure, easier to debug and extend     |
+| **Safety**          | 9 verification checkpoints before destructive operations |
+| **Monitoring**      | Remote visibility during deletion phase (port 2222)      |
+| **Standards**       | Uses official Arch installation tools                    |
 
 ---
 
