@@ -51,6 +51,7 @@ There are multiple tools which automate the installation of Arch Linux from anot
 - **[image-bootstrap](https://github.com/hartwork/image-bootstrap)** (Python) - Image bootstrap tool (does not perform PGP signature verification)
 
 **i2a advantages**:
+
 - ✅ Performs PGP signature verification (via pacman-key)
 - ✅ Compatible with systemd v255+
 - ✅ Full LUKS encryption support with LVM
